@@ -1,0 +1,31 @@
+name: Build dylib
+
+on:
+  push:
+    paths: ["FixImageContext/**", ".github/workflows/build.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch fishhook
+        working-directory: FixImageContext
+        run: |
+          curl -fsSL -O https://raw.githubusercontent.com/facebook/fishhook/main/fishhook.c
+          curl -fsSL -O https://raw.githubusercontent.com/facebook/fishhook/main/fishhook.h
+
+      - name: Build
+        working-directory: FixImageContext
+        run: make
+
+      - name: Check
+        working-directory: FixImageContext
+        run: file FixImageContext.dylib && lipo -info FixImageContext.dylib
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FixImageContext-dylib
+          path: FixImageContext/FixImageContext.dylib
