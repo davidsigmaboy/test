@@ -2,7 +2,7 @@ name: Build dylib
 
 on:
   push:
-    paths: ["FixImageContext/**", ".github/workflows/build.yml"]
+    paths: ["FixImageContext/**", "MemGuard/**", ".github/workflows/build.yml"]
   workflow_dispatch:
 
 jobs:
@@ -17,15 +17,22 @@ jobs:
           curl -fsSL -O https://raw.githubusercontent.com/facebook/fishhook/main/fishhook.c
           curl -fsSL -O https://raw.githubusercontent.com/facebook/fishhook/main/fishhook.h
 
-      - name: Build
+      - name: Build FixImageContext
         working-directory: FixImageContext
         run: make
 
+      - name: Build MemGuard
+        working-directory: MemGuard
+        run: make
+
       - name: Check
-        working-directory: FixImageContext
-        run: file FixImageContext.dylib && lipo -info FixImageContext.dylib
+        run: |
+          file FixImageContext/FixImageContext.dylib MemGuard/MemGuard.dylib
+          lipo -info MemGuard/MemGuard.dylib
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FixImageContext-dylib
-          path: FixImageContext/FixImageContext.dylib
+          name: tweaks
+          path: |
+            FixImageContext/FixImageContext.dylib
+            MemGuard/MemGuard.dylib
